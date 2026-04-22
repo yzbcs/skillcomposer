@@ -7,6 +7,7 @@ Scans outputs/eval_report.json and assets/output/*.html to build a summary page.
 import json
 import os
 import re
+import shutil
 from pathlib import Path
 
 WORK_DIR = Path("work")
@@ -17,6 +18,17 @@ ASSETS_OUTPUT = PROJECT_ROOT / "assets" / "output"
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 DOCS_DIR = PROJECT_ROOT / "docs"
 README_FILE = PROJECT_ROOT / "README.md"
+
+
+def copy_html_to_work():
+    """Copy HTML files from assets/output/ into work/ for deployment."""
+    copied = []
+    if ASSETS_OUTPUT.exists():
+        for f in sorted(ASSETS_OUTPUT.glob("*.html")):
+            dest = WORK_DIR / f.name
+            shutil.copy2(f, dest)
+            copied.append(f.name)
+    return copied
 
 def load_eval_report():
     """Load and parse eval_report.json"""
@@ -34,19 +46,18 @@ def load_readme():
         return content[:2000]  # First 2000 chars
     return None
 
-def scan_html_files():
-    """Find all HTML files in assets/output/"""
+def scan_work_html_files():
+    """Find all HTML files in work/ (already copied for deployment)."""
     html_files = []
-    if ASSETS_OUTPUT.exists():
-        for f in sorted(ASSETS_OUTPUT.glob("*.html")):
-            size = f.stat().st_size
-            mtime = f.stat().st_mtime
-            html_files.append({
-                "name": f.name,
-                "path": str(f.relative_to(PROJECT_ROOT)),
-                "size": size,
-                "mtime": mtime
-            })
+    for f in sorted(WORK_DIR.glob("*.html")):
+        if f.name == "index.html":
+            continue
+        size = f.stat().st_size
+        html_files.append({
+            "name": f.name,
+            "path": f.name,  # relative to work/ root
+            "size": size,
+        })
     return html_files
 
 def build_html(report, readme, html_files):
@@ -214,9 +225,13 @@ def escape_html(text):
         .replace('"', "&quot;"))
 
 def main():
+    # Copy HTML artifacts into work/ so they're included in the deployment
+    copied = copy_html_to_work()
+    print(f"Copied to work/: {copied}")
+
     report = load_eval_report()
     readme = load_readme()
-    html_files = scan_html_files()
+    html_files = scan_work_html_files()
 
     html = build_html(report, readme, html_files)
 
