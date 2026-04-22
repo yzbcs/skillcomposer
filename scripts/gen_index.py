@@ -59,8 +59,10 @@ def build_html(report, readme, html_files):
         stacked = report.get("pass_rate", {}).get("stacked_skills", 0)
         synthesized = report.get("pass_rate", {}).get("synthesized_skill", 0)
         gain = report.get("normalized_gain", 0)
+        has_report = True
     else:
         benchmark = total = stacked = synthesized = gain = "N/A"
+        has_report = False
 
     # HTML rows for files
     file_rows = ""
@@ -169,15 +171,15 @@ def build_html(report, readme, html_files):
           <div class="stat-label">Total Cases</div>
         </div>
         <div class="stat">
-          <div class="stat-value">{stacked:.1%}</div>
+          <div class="stat-value">{stacked if not has_report else f"{stacked:.1%}"}</div>
           <div class="stat-label">Stacked Skills</div>
         </div>
         <div class="stat">
-          <div class="stat-value">{synthesized:.1%}</div>
+          <div class="stat-value">{synthesized if not has_report else f"{synthesized:.1%}"}</div>
           <div class="stat-label">Synthesized Skill</div>
         </div>
         <div class="stat">
-          <div class="stat-value">{gain:+.1%}</div>
+          <div class="stat-value">{gain if not has_report else f"{gain:+.1%}"}</div>
           <div class="stat-label">Normalized Gain</div>
         </div>
       </div>
