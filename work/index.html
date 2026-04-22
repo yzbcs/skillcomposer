@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skill Composer — Evaluation Results</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    h1 { color: #58a6ff; margin-bottom: 0.5rem; }
+    .subtitle { color: #8b949e; margin-bottom: 2rem; }
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: #21262d;
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #58a6ff;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #8b949e;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem;
+      border-bottom: 1px solid #30363d;
+    }
+    th { color: #8b949e; font-weight: 600; }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .readme pre {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 1rem;
+      overflow: auto;
+      max-height: 300px;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+    footer {
+      text-align: center;
+      color: #8b949e;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Skill Composer</h1>
+    <p class="subtitle">Query-specific skill composition framework — evaluation results &amp; artifacts</p>
+
+    <div class="card">
+      <h2>Benchmark Results</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value">skillsbench</div>
+          <div class="stat-label">Benchmark</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">62</div>
+          <div class="stat-label">Total Cases</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">83.9%</div>
+          <div class="stat-label">Stacked Skills</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">98.4%</div>
+          <div class="stat-label">Synthesized Skill</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">+17.3%</div>
+          <div class="stat-label">Normalized Gain</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Artifacts</h2>
+      <table>
+        <thead>
+          <tr><th>File</th><th>Size</th></tr>
+        </thead>
+        <tbody>
+          
+        <tr>
+          <td><a href="eval_results.html">eval_results.html</a></td>
+          <td>17.4 KB</td>
+        </tr>
+        <tr>
+          <td><a href="pipeline.html">pipeline.html</a></td>
+          <td>8.5 KB</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <section class="readme"><h2>Project README</h2><pre class="preview"># Skill Composer
+
+Query-specific skill composition 框架：针对当前 task query 与候选 skills，执行 `Extract → Select → Resolve → Compress` 四步，生成更短、更可执行的 synthesized `SKILL.md`。
+
+## 1. 项目结构
+
+```text
+exp7_skillcomposer/
+├── README.md
+├── requirements.txt
+├── config/
+│   └── config.yaml              # 模型配置（API key、base_url、参数等）
+├── skillsbench/                 # SkillsBench benchmark 数据（git clone）
+│   └── tasks/                   # 89 个 task，每个含 instruction.md + environment/skills/
+├── dataset/
+│   └── constructed/             # 自构造 demo 数据（3-5 个简单 task）
+├── outputs/                     # 运行产物（自动生成）
+│   └── eval_skills/             # 每个 task 合成后的 SKILL.md
+├── docs/                        # 设计文档
+│   └── task1/
+│       └── constructed_benchmark_design.md
+└── skill_composer/
+    ├── __init__.py
+    ├── config.py
+    ├── main.py                  # CLI 入口（compose / evaluate）
+    ├── models/
+    │   └── skill.py             # RawSkill / ExtractedSkill / SelectedSkill 等
+    ├── pipeline/
+    │   ├── extractor.py         # Extract：结构化提取 raw skill 字段
+    │   ├── selector.py           # Select：基于 task relevance 过滤 items
+    │   ├── resolver.py           # Resolve：合并重复、解决冲突、补全依赖
+    │   └── compressor.py        # Compress：压缩为最终 SKILL.md
+    ├── utils/
+    │   ├── llm_client.py        # OpenAI-compatible API 调用 + JSON 解析
+    │   ├── skill_loader.py       # 加载 SKILL.md 文件
+    │   └── skill_writer.py       # 写出合成后的 SKILL.md
+    └── eval/
+        ├── evaluator.py         # 评测核心（Evaluator / BenchmarkAdapter / VerificationBackend）
+        ├── adapters/             # Benchmark 适配器
+        │   ├── constructed_benchmark.py   # 自构造 demo
+        │   ├── toolbench_adapter.py       # ToolBench 数据集
+        │   ├── skillsbench_adapter.py     # SkillsBench tasks/
+        │   └── terminal_bench_adapter.py # Terminal-Bench（占位）
+        └── backends/            # 验证后端
+            ├── llm_judge_backend.py       # LLM-as-Judge（默认）
+            └── constructed_judge.py       # 脚本执行验证
+```
+
+## 2. 环境准备
+
+```bash
+cd /Users</pre></section>
+
+    <footer>
+      Generated by ClawEvalKit · Updated automatically on push to main
+    </footer>
+  </div>
+</body>
+</html>

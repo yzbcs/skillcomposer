@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Skill Composer Pipeline</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; margin: 0; padding: 40px; background: #f8fafc; color: #1e293b; }
+  h1 { text-align: center; color: #0f172a; margin-bottom: 40px; font-size: 24px; }
+  h2 { font-size: 16px; color: #475569; font-weight: 500; margin: 0 0 8px 0; }
+  p { font-size: 13px; color: #64748b; margin: 0; line-height: 1.5; }
+
+  .pipeline { display: flex; align-items: stretch; justify-content: center; gap: 0; max-width: 1200px; margin: 0 auto; }
+
+  .stage-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 240px; }
+  .stage { background: white; border-radius: 12px; padding: 20px 16px; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 2px solid transparent; }
+  .stage.extract { border-color: #3b82f6; }
+  .stage.select { border-color: #8b5cf6; }
+  .stage.resolve { border-color: #f59e0b; }
+  .stage.compress { border-color: #10b981; }
+
+  .stage-name { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+  .stage.extract .stage-name { color: #3b82f6; }
+  .stage.select .stage-name { color: #8b5cf6; }
+  .stage.resolve .stage-name { color: #f59e0b; }
+  .stage.compress .stage-name { color: #10b981; }
+
+  .sub-stage { background: #f8fafc; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .sub-stage:last-child { margin-bottom: 0; }
+  .sub-stage-title { font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+  .sub-stage-desc { font-size: 11px; color: #64748b; }
+
+  .arrow { display: flex; align-items: center; justify-content: center; width: 48px; flex-shrink: 0; }
+  .arrow svg { width: 32px; height: 32px; color: #cbd5e1; }
+
+  .io { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 32px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+  .io-box { background: white; border-radius: 10px; padding: 14px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; flex: 1; max-width: 280px; }
+  .io-box.input { border: 2px solid #94a3b8; }
+  .io-box.output { border: 2px solid #10b981; }
+  .io-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .io-box.input .io-label { color: #64748b; }
+  .io-box.output .io-label { color: #10b981; }
+  .io-content { font-size: 13px; color: #1e293b; font-weight: 500; }
+  .io-arrow { color: #94a3b8; font-size: 20px; align-self: center; }
+
+  .metrics { max-width: 1200px; margin: 32px auto 0; background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .metrics h3 { font-size: 14px; color: #0f172a; margin: 0 0 16px 0; font-weight: 600; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .metric { background: #f8fafc; border-radius: 8px; padding: 14px; text-align: center; }
+  .metric-value { font-size: 24px; font-weight: 700; color: #0f172a; }
+  .metric-label { font-size: 11px; color: #64748b; margin-top: 4px; }
+  .metric.delta .metric-value { color: #16a34a; }
+  .metric.pass-s .metric-value { color: #64748b; }
+  .metric.pass-y .metric-value { color: #16a34a; }
+
+  .problem { max-width: 1200px; margin: 32px auto 0; background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .problem h3 { font-size: 14px; color: #0f172a; margin: 0 0 16px 0; font-weight: 600; }
+  .problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .problem-item { background: #fef2f2; border-radius: 8px; padding: 14px; border-left: 3px solid #ef4444; }
+  .problem-item-title { font-size: 13px; font-weight: 600; color: #991b1b; margin-bottom: 6px; }
+  .problem-item-desc { font-size: 12px; color: #64748b; }
+</style>
+</head>
+<body>
+<h1>Skill Composer — 查询特定技能合成流水线</h1>
+
+<div class="problem">
+  <h3>问题背景</h3>
+  <div class="problem-grid">
+    <div class="problem-item">
+      <div class="problem-item-title">冗余信息多</div>
+      <div class="problem-item-desc">原始技能文档为通用场景设计，包含大量与当前任务无关的内容</div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-item-title">冲突与重复</div>
+      <div class="problem-item-desc">多技能组合时存在重复指令和相互冲突的操作步骤</div>
+    </div>
+    <div class="problem-item">
+      <div class="problem-item-title">堆叠后过于冗长</div>
+      <div class="problem-item-desc">直接拼接多个技能文档，导致上下文过长、噪声大</div>
+    </div>
+  </div>
+</div>
+
+<div style="height: 32px;"></div>
+
+<div class="pipeline">
+  <div class="stage-wrap">
+    <div class="stage extract">
+      <div class="stage-name">Extract 抽取</div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">解析 SKILL.md</div>
+        <div class="sub-stage-desc">提取结构化字段：核心步骤、约束条件、示例、依赖项</div>
+      </div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">字段标准化</div>
+        <div class="sub-stage-desc">统一不同技能作者的格式差异</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage select">
+      <div class="stage-name">Select 筛选</div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">逐项相关性判断</div>
+        <div class="sub-stage-desc">LLM 逐条判断每个字段与任务查询的相关性</div>
+      </div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">硬过滤</div>
+        <div class="sub-stage-desc">丢弃 keep=false 的项，保留其余不变</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage resolve">
+      <div class="stage-name">Resolve 消解</div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">去重合并</div>
+        <div class="sub-stage-desc">合并多个候选技能中相同或近似的指令</div>
+      </div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">冲突解决</div>
+        <div class="sub-stage-desc">任务优先策略：保留与任务更相关的版本</div>
+      </div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">依赖补全</div>
+        <div class="sub-stage-desc">补充被保留项所隐含的依赖项</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage compress">
+      <div class="stage-name">Compress 压缩</div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">紧凑渲染</div>
+        <div class="sub-stage-desc">以目标压缩比渲染最终 SKILL.md</div>
+      </div>
+      <div class="sub-stage">
+        <div class="sub-stage-title">可读性检查</div>
+        <div class="sub-stage-desc">确保输出连贯、自包含、可执行</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="io">
+  <div class="io-box input">
+    <div class="io-label">输入</div>
+    <div class="io-content">N × SKILL.md + 任务查询</div>
+  </div>
+  <div class="io-arrow">→</div>
+  <div class="io-box output">
+    <div class="io-label">输出</div>
+    <div class="io-content">精简 SKILL.md（任务专用）</div>
+  </div>
+</div>
+
+<div class="metrics">
+  <h3>SkillsBench 评测结果（62 个任务）</h3>
+  <div class="metrics-grid">
+    <div class="metric pass-s">
+      <div class="metric-value">83.9%</div>
+      <div class="metric-label">堆叠技能通过率</div>
+    </div>
+    <div class="metric pass-y">
+      <div class="metric-value">98.4%</div>
+      <div class="metric-label">合成技能通过率</div>
+    </div>
+    <div class="metric delta">
+      <div class="metric-value">+17.3%</div>
+      <div class="metric-label">归一化提升</div>
+    </div>
+    <div class="metric delta">
+      <div class="metric-value">+10.2%</div>
+      <div class="metric-label">平均分提升</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
