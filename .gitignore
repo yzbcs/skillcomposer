@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.env
+.venv/
+env/
+venv/
+conda-env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude code memory & settings
+.claude/
+
+# Skillsbench (external benchmark data)
+skillsbench/
+
+# ClawEvalkit_new (temporary/new eval kit)
+ClawEvalkit_new/
+
+# Assets (runtime outputs - don't commit these)
+/assets/log/
+/assets/output/*.json
+/assets/output/*.csv
+/assets/output/*.pkl
+
+# Local outputs
+outputs/
+*.log

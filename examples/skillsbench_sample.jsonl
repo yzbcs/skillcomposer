@@ -1,0 +1,1 @@
+{"task_id":"task-001","query":"Use available skills to summarize log files and output concise diagnostics.","candidate_skill_paths":["/path/to/skill_a/SKILL.md","/path/to/skill_b/SKILL.md"],"oracle_skill_path":"/path/to/oracle/SKILL.md","metadata":{"suite":"skillsbench-sample"}}

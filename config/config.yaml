@@ -1,0 +1,8 @@
+model: MiniMax-M2.7
+api_key: 
+base_url: https://api.minimaxi.com/v1
+max_output_tokens: 2000
+compress_ratio_target: 0.5
+timeout_sec: 1800
+max_retries: 2
+temperature: 0.0
